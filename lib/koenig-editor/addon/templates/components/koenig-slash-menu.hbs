@@ -1,10 +1,15 @@
 {{#if showMenu}}
     <div class="koenig-cardmenu {{kg-style "cardmenu"}}">
-        {{#each items as |item|}}
-            <div class="{{if item.selected "kg-cardmenu-card-selected"}} {{kg-style "cardmenu-card"}}" {{action "itemClicked" item on="click"}} data-kg="cardmenu-card">
-                <div class="{{kg-style "cardmenu-icon"}}">{{svg-jar item.icon class="w8 h8 stroke-midgrey"}}</div>
-                <div class="{{kg-style "cardmenu-label"}}">{{item.label}}</div>
+        {{#each itemSections as |section sectionIndex|}}
+            <div class="flex flex-column {{unless (eq sectionIndex 0) "mt4"}} mb4 nl4 nr4 pl4 pr4 bg-whitegrey midlightgrey ttu f-small fw4" style="min-width: calc(100% + 3.2rem);">
+                {{section.title}}
             </div>
+            {{#each section.items as |item|}}
+                <div class="{{if item.selected "kg-cardmenu-card-selected"}} {{kg-style "cardmenu-card"}}" {{action "itemClicked" item on="click"}} data-kg="cardmenu-card">
+                    <div class="{{kg-style "cardmenu-icon"}}">{{svg-jar item.icon class="w8 h8 stroke-midgrey"}}</div>
+                    <div class="{{kg-style "cardmenu-label"}}">{{item.label}}</div>
+                </div>
+            {{/each}}
         {{/each}}
     </div>
 {{/if}}
