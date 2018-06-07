@@ -20,16 +20,16 @@
         {{/if}}
     {{else}}
         {{#if convertUrl.isRunning}}
-            <div class="miw-100 pa2 ba br2 b--midlightgrey flex items-center justify-center bg-whitegrey-l2 f6 lh-title">
-                &nbsp;<div class="ghost-spinner"></div>&nbsp;
+            <div class="miw-100 pa2 ba br2 b--lightgrey-d1 flex items-center justify-center bg-whitegrey-l2 f6 lh-title h10">
+                &nbsp;<div class="ghost-spinner spinner-blue"></div>&nbsp;
             </div>
         {{else if hasError}}
-            <div class="miw-100 flex flex-row pa2 ba br2 red-d3 bg-red-l3 f6 fw4 lh-title">
-                <span class="mr2">There was an error when parsing the URL.</span>
-                <button type="button" class="red-d3 mr2 fw6 underline" {{action "retry"}}>Retry.</button>
-                <button type="button" class="red-d3 mr-auto fw6 underline" {{action "insertAsLink"}}>Paste URL as link</button>
-                <button type="button" {{action deleteCard}}>
-                    {{svg-jar "close" class="w3 fill-red-d3"}}
+            <div class="miw-100 flex flex-row pa2 pl3 ba br2 b--red-l3 red bg-error-red f7 fw4 lh-title h10 items-center">
+                <span class="mr3">There was an error when parsing the URL.</span>
+                <button type="button" class="red-d2 mr3 fw6 hover-red" {{action "retry"}}><span class="underline">Retry</span></button>
+                <button type="button" class="red-d2 mr-auto fw6 underline hover-red" {{action "insertAsLink"}}><span class="underline">Paste URL as link</span></button>
+                <button type="button" {{action deleteCard}} class="nudge-right--2">
+                    {{svg-jar "close" class="w3 stroke-red-l3"}}
                 </button>
             </div>
         {{else}}
@@ -37,7 +37,7 @@
                 type="text"
                 value={{payload.url}}
                 placeholder="Paste URL to add embedded content..."
-                class="miw-100 pa2 ba br2 b--midlightgrey f6 form-text lh-title"
+                class="miw-100 pa2 ba br2 b--lightgrey-d2 f7 form-text lh-title tracked-2 h10"
                 oninput={{action "updateUrl"}}
                 onkeydown={{action "urlKeydown"}}>
         {{/if}}
