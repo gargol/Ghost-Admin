@@ -1,5 +1,5 @@
 {{#koenig-card
-    class="flex flex-column ba b--white kg-card-hover"
+    class="flex flex-column"
     isSelected=isSelected
     isEditing=isEditing
     selectCard=(action selectCard)
@@ -13,7 +13,7 @@
 }}
     {{#if payload.html}}
         <div class="koenig-embed-{{payload.type}} flex justify-center">{{{payload.html}}}</div>
-        <div class="koenig-card-click-overlay"></div>
+        <div class="koenig-card-click-overlay ba b--white kg-card-hover"></div>
 
         {{#if isSelected}}
           {{!-- TODO: caption input --}}
