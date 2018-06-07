@@ -12,8 +12,8 @@
     showSelectedOutline=payload.html
 }}
     {{#if payload.html}}
-        <div class="koenig-embed-{{payload.type}} flex justify-center">{{{payload.html}}}</div>
-        <div class="koenig-card-click-overlay ba b--white kg-card-hover"></div>
+        <div class="koenig-embed-{{payload.type}} flex justify-center" data-kg-embed>{{{payload.html}}}</div>
+        <div class="koenig-card-click-overlay ba b--white kg-card-hover" data-kg-overlay></div>
 
         {{#if isSelected}}
           {{!-- TODO: caption input --}}
