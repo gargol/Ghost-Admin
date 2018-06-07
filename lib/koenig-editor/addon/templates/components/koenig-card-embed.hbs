@@ -12,7 +12,7 @@
     showSelectedOutline=payload.html
 }}
     {{#if payload.html}}
-        <div>{{{payload.html}}}</div>
+        <div class="koenig-embed-{{payload.type}}">{{{payload.html}}}</div>
         <div class="koenig-card-click-overlay"></div>
 
         {{#if isSelected}}
