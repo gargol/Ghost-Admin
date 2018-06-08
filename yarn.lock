@@ -5338,9 +5338,9 @@ ghost-ignition@^2.7.0:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-spirit@0.0.21:
-  version "0.0.21"
-  resolved "https://registry.yarnpkg.com/ghost-spirit/-/ghost-spirit-0.0.21.tgz#19eca18d3d0be3fe1b20d8add16db23e4a3040ff"
+ghost-spirit@0.0.22:
+  version "0.0.22"
+  resolved "https://registry.yarnpkg.com/ghost-spirit/-/ghost-spirit-0.0.22.tgz#b98535894cf534c792b0960e380db8ec1099180a"
   dependencies:
     autoprefixer "8.2.0"
     bluebird "^3.4.6"
