@@ -12,12 +12,26 @@
     showSelectedOutline=payload.html
 }}
     {{#if payload.html}}
-        <div class="koenig-embed-{{payload.type}} flex justify-center" data-kg-embed>{{{payload.html}}}</div>
-        <div class="koenig-card-click-overlay ba b--white kg-card-hover" data-kg-overlay></div>
+        <div class="kg-card-hover">
+            <div class="koenig-embed-{{payload.type}} flex justify-center relative" data-kg-embed>
+                {{{payload.html}}}
+                <div class="koenig-card-click-overlay ba b--white" data-kg-overlay></div>
+            </div>
 
-        {{#if isSelected}}
-          {{!-- TODO: caption input --}}
-        {{/if}}
+            {{#if (or isSelected payload.caption)}}
+                <figcaption class="{{kg-style "figcaption"}} w-100">
+                    <input
+                        type="text"
+                        placeholder="Type caption for embed (optional)"
+                        class="miw-100 tc bn form-text bg-transparent"
+                        name="caption"
+                        value={{payload.caption}}
+                        oninput={{action "updateCaption" value="target.value"}}
+                        onkeydown={{action "captionKeydown"}}
+                    >
+                </figcaption>
+            {{/if}}
+        </div>
     {{else}}
         {{#if convertUrl.isRunning}}
             <div class="miw-100 pa2 ba br2 b--lightgrey-d1 flex items-center justify-center bg-whitegrey-l2 f6 lh-title h10">
