@@ -155,15 +155,12 @@ describe('Acceptance: Members', function () {
 
             await click('[data-test-button="save"]');
 
+            await wait();
+
             expect(find('.gh-member-basic-settings-form input[name="name"]').value, 'name has been preserved')
                 .to.equal('New Name');
-
-            // disables email field after member has been created
-            // TODO: the commented out case should be valid, but it fails when run from headless
-            // expect(find('.gh-member-basic-settings-form input[name="email-disabled"]').disabled, 'makes sure email is disabled')
-            //     .to.equal(true);
-            expect(find('.gh-member-basic-settings-form input[name="email"]').value, 'name has been preserved')
-                .to.equal('example@domain.com');
+            expect(find('.gh-member-basic-settings-form input[name="email-disabled"]').disabled, 'makes sure email is disabled')
+                .to.equal(true);
         });
     });
 });
