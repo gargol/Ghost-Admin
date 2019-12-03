@@ -155,11 +155,6 @@ describe('Acceptance: Members', function () {
 
             await click('[data-test-button="save"]');
 
-            // extra timeout needed for FF on Linux - sometimes it doesn't update
-            // quick enough, especially on Travis, and an extra wait() call
-            // doesn't help
-            await timeout(200);
-
             expect(find('.gh-member-basic-settings-form input[name="name"]').value, 'name has been preserved')
                 .to.equal('New Name');
 
