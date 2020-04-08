@@ -7,13 +7,9 @@ export default ModalComponent.extend({
 
     didInsertElement() {
         this._super(...arguments);
-
-        console.log('mounted');
     },
 
     willDestroyElement() {
         this._super(...arguments);
-
-        console.log('UNmounted');
     }
 });
