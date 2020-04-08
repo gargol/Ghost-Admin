@@ -5,7 +5,6 @@
 
 .fullscreen-modal-billing .modal-content {
     position: relative;
-    overflow: scroll;
     height: 100%;
     padding: 0;
 }
