@@ -25,3 +25,14 @@
     border: none;
     transform: translate3d(0, 0, 0);
 }
+
+.gh-billing-close {
+    width: calc(50vw - 200px)
+}
+
+.gh-billing-close button {
+    stroke: var(--midgrey);
+    opacity: 0.6;
+    transition: all 0.2s ease-in-out;
+    top: 25px;
+}
