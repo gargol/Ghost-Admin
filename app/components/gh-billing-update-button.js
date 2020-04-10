@@ -39,7 +39,6 @@ export default Component.extend({
             }
 
             if (event && event.data && event.data.subscription) {
-                event.data.subscription.status = 'trialing';
                 this.set('subscription', event.data.subscription);
             }
         });
