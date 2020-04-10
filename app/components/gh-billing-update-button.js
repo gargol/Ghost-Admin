@@ -10,7 +10,6 @@ export default Component.extend({
 
     subscription: null,
 
-    billingEndpoint: computed.reads('config.billingUrl'),
     showUpgradeButton: computed.equal('subscription.status', 'trialing'),
 
     didRender() {
@@ -48,6 +47,7 @@ export default Component.extend({
 
     actions: {
         openBilling() {
+            this.billing.set('upgrade', true);
             this.billing.toggleProperty('billingOpen');
         }
     }

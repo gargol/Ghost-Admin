@@ -1,8 +1,25 @@
 import Service from '@ember/service';
+import {computed} from '@ember/object';
+import {inject as service} from '@ember/service';
 
 export default Service.extend({
+    config: service(),
+
     init() {
         this._super(...arguments);
         this.billingOpen = false;
-    }
+    },
+
+    billingOpen: false,
+    upgrade: true,
+
+    endpoint: computed('config.billingUrl', 'billingOpen', function () {
+        let url = this.config.get('billingUrl');
+
+        if (this.get('upgrade')) {
+            url += 'plans';
+        }
+
+        return url;
+    })
 });

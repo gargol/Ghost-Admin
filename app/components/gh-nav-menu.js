@@ -81,6 +81,7 @@ export default Component.extend(ShortcutsMixin, {
             this.toggleProperty('showSearchModal');
         },
         toggleBillingModal() {
+            this.billing.set('upgrade', false);
             this.billing.toggleProperty('billingOpen');
         }
     },
