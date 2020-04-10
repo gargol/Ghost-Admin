@@ -7,13 +7,13 @@ export default Service.extend({
 
     init() {
         this._super(...arguments);
-        this.billingOpen = false;
+        this.billingWindowOpen = false;
     },
 
-    billingOpen: false,
+    billingWindowOpen: false,
     upgrade: true,
 
-    endpoint: computed('config.billingUrl', 'billingOpen', function () {
+    endpoint: computed('config.billingUrl', 'billingWindowOpen', function () {
         let url = this.config.get('billingUrl');
 
         if (this.get('upgrade')) {

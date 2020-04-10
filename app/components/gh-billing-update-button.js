@@ -48,7 +48,7 @@ export default Component.extend({
     actions: {
         openBilling() {
             this.billing.set('upgrade', true);
-            this.billing.toggleProperty('billingOpen');
+            this.billing.toggleProperty('billingWindowOpen');
         }
     }
 });
