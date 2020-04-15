@@ -4,6 +4,7 @@ import {inject as service} from '@ember/service';
 
 export default Service.extend({
     config: service(),
+    ghostPaths: service(),
 
     init() {
         this._super(...arguments);
@@ -17,7 +18,7 @@ export default Service.extend({
         let url = this.config.get('billingUrl');
 
         if (this.get('upgrade')) {
-            url += 'plans';
+            url = this.ghostPaths.url.join(url, 'plans');
         }
 
         return url;
