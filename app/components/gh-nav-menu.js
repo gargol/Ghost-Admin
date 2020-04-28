@@ -82,7 +82,8 @@ export default Component.extend(ShortcutsMixin, {
         },
         toggleBillingModal() {
             this.billing.set('upgrade', false);
-            this.billing.toggleProperty('billingWindowOpen');
+
+            this.billing.openBillingWindow(this.router.currentURL);
         }
     },
 

@@ -3,6 +3,7 @@ import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default Component.extend({
+    router: service(),
     config: service(),
     ghostPaths: service(),
     ajax: service(),
@@ -48,7 +49,7 @@ export default Component.extend({
     actions: {
         openBilling() {
             this.billing.set('upgrade', true);
-            this.billing.toggleProperty('billingWindowOpen');
+            this.billing.openBillingWindow(this.router.currentURL);
         }
     }
 });

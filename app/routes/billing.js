@@ -8,15 +8,22 @@ export default Route.extend({
         action: {refreshModel: true}
     },
 
+    beforeModel(transition) {
+        this.billing.set('previousTransition', transition);
+    },
+
     model(params) {
+        console.log('activating billing route model');
         if (params.action) {
             this.billing.set('action', params.action);
         }
 
         this.billing.set('billingWindowOpen', true);
+    },
 
-        // NOTE: if this route is ever triggered it was opened through external link because
-        //       the route has no underlying templates to render we redirect to root route
-        this.transitionTo('/');
+    actions: {
+        willTransition() {
+            this.billing.set('billingWindowOpen', false);
+        }
     }
 });
