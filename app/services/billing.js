@@ -9,7 +9,7 @@ export default Service.extend({
 
     billingRouteRoot: '#/billing',
     billingWindowOpen: false,
-    upgrade: false,
+
     action: null,
     previousRoute: null,
 
@@ -17,10 +17,10 @@ export default Service.extend({
         this._super(...arguments);
     },
 
-    openBillingWindow(currentRoute) {
+    openBillingWindow(currentRoute, childRoute) {
         this.set('previousRoute', currentRoute);
 
-        this.router.transitionTo('/billing');
+        this.router.transitionTo(childRoute || '/billing');
     },
 
     closeBillingWindow() {
@@ -34,8 +34,8 @@ export default Service.extend({
     endpoint: computed('config.billingUrl', 'billingWindowOpen', 'action', function () {
         let url = this.config.get('billingUrl');
 
-        if (this.get('upgrade')) {
-            url = this.ghostPaths.url.join(url, 'plans');
+        if (this.router.currentRoute && this.router.currentRoute.name === 'billing.billing-sub') {
+            url += `/${this.router.currentRoute.params.sub}`;
         }
 
         if (this.get('action')) {

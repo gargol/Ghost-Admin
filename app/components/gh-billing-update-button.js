@@ -48,8 +48,7 @@ export default Component.extend({
 
     actions: {
         openBilling() {
-            this.billing.set('upgrade', true);
-            this.billing.openBillingWindow(this.router.currentURL);
+            this.billing.openBillingWindow(this.router.currentURL, '/billing/plans');
         }
     }
 });

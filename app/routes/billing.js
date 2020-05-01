@@ -13,7 +13,6 @@ export default Route.extend({
     },
 
     model(params) {
-        console.log('activating billing route model');
         if (params.action) {
             this.billing.set('action', params.action);
         }
@@ -22,8 +21,22 @@ export default Route.extend({
     },
 
     actions: {
-        willTransition() {
-            this.billing.set('billingWindowOpen', false);
+        willTransition(transition) {
+            let isBillingTransition = false;
+
+            if (transition) {
+                let destinationUrl = (typeof transition.to === 'string')
+                    ? transition.to
+                    : (transition.intent
+                        ? transition.intent.url
+                        : '');
+
+                if (destinationUrl.includes('/billing')) {
+                    isBillingTransition = true;
+                }
+            }
+
+            this.billing.set('billingWindowOpen', isBillingTransition);
         }
     }
 });
