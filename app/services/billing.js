@@ -15,6 +15,17 @@ export default Service.extend({
 
     init() {
         this._super(...arguments);
+
+        window.addEventListener('message', (event) => {
+            if (event && event.data && event.data.route) {
+                let destinationRoute = `#/billing`;
+
+                if (event.data.route !== '/') {
+                    destinationRoute += event.data.route;
+                }
+                window.history.replaceState(window.history.state, '', destinationRoute);
+            }
+        });
     },
 
     openBillingWindow(currentRoute, childRoute) {
