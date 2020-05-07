@@ -5,6 +5,7 @@
     height: 100%;
     width: 100%;
     z-index: 9999;
+    background: var(--main-bg-color);
 }
 
 .gh-billing-container {
@@ -50,11 +51,4 @@
     opacity: 0.6;
     transition: all 0.2s ease-in-out;
     top: 25px;
-}
-
-#billing-frame-global {
-    visibility: hidden;
-    height:0;
-    width:0;
-    border:none;
 }
