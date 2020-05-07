@@ -11,6 +11,7 @@ export default Service.extend({
     billingWindowOpen: false,
 
     action: null,
+    subscription: null,
     previousRoute: null,
 
     init() {

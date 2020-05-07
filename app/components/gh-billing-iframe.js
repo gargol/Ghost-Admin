@@ -25,7 +25,7 @@ export default Component.extend({
 
                 // NOTE: the handler is placed here to avoid additional logic to check if iframe has loaded
                 //       receiving a 'token' request is an indication that page is ready
-                if (!fetchingSubscription && !this.get('subscription')) {
+                if (!fetchingSubscription && !this.billing.get('subscription')) {
                     fetchingSubscription = true;
                     iframe.contentWindow.postMessage({
                         query: 'getSubscription',
@@ -35,7 +35,7 @@ export default Component.extend({
             }
 
             if (event && event.data && event.data.subscription) {
-                this.set('subscription', event.data.subscription);
+                this.billing.set('subscription', event.data.subscription);
             }
         });
     }
