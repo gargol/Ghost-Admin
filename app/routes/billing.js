@@ -38,5 +38,11 @@ export default Route.extend({
 
             this.billing.set('billingWindowOpen', isBillingTransition);
         }
+    },
+
+    buildRouteInfoMetadata() {
+        return {
+            titleToken: 'Billing'
+        };
     }
 });
