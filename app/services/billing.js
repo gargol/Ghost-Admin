@@ -16,7 +16,24 @@ export default Service.extend({
 
         window.addEventListener('message', (event) => {
             if (event && event.data && event.data.route) {
-                let destinationRoute = `#/billing`;
+                this.handleRouteChangeInIframe(event.data.route);
+            }
+        });
+    },
+
+    handleRouteChangeInIframe(destinationRoute) {
+        if (this.get('billingWindowOpen')) {
+            let billingRoute = this.get('billingRouteRoot');
+
+            if (destinationRoute !== '/') {
+                billingRoute += destinationRoute;
+            }
+
+            if (window.location.hash !== billingRoute) {
+                window.history.replaceState(window.history.state, '', billingRoute);
+            }
+        }
+    },
 
     getIframeURL() {
         let url = this.config.get('billingUrl');
