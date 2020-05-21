@@ -17,7 +17,7 @@ export default Route.extend({
             this.billing.set('action', params.action);
         }
 
-        this.billing.set('billingWindowOpen', true);
+        this.billing.setBillingWindowOpen(true);
     },
 
     actions: {
@@ -36,7 +36,7 @@ export default Route.extend({
                 }
             }
 
-            this.billing.set('billingWindowOpen', isBillingTransition);
+            this.billing.setBillingWindowOpen(isBillingTransition);
         }
     },
 

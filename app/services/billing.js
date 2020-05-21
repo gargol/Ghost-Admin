@@ -1,5 +1,4 @@
 import Service from '@ember/service';
-import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default Service.extend({
@@ -9,8 +8,6 @@ export default Service.extend({
 
     billingRouteRoot: '#/billing',
     billingWindowOpen: false,
-
-    action: null,
     subscription: null,
     previousRoute: null,
 
@@ -21,39 +18,55 @@ export default Service.extend({
             if (event && event.data && event.data.route) {
                 let destinationRoute = `#/billing`;
 
-                if (event.data.route !== '/') {
-                    destinationRoute += event.data.route;
-                }
-                window.history.replaceState(window.history.state, '', destinationRoute);
+    getIframeURL() {
+        let url = this.config.get('billingUrl');
+
+        if (window.location.hash && window.location.hash.includes(this.get('billingRouteRoot'))) {
+            let destinationRoute = window.location.hash.replace(this.get('billingRouteRoot'), '');
+
+            if (destinationRoute) {
+                url += destinationRoute;
             }
-        });
+        }
+
+        return url;
     },
 
+    // Controls billing window modal visibility and sync of the URL visible in browser
+    // and the URL opened on the iframe. It is responsible to non user triggered iframe opening,
+    // for example: by entering "/billing" route in the URL or using history navigation (back and forward)
+    setBillingWindowOpen(value) {
+        let billingIframe = this.getBillingIframe();
+
+        if (billingIframe && value) {
+            billingIframe.contentWindow.location.replace(this.getIframeURL());
+        }
+
+        this.set('billingWindowOpen', value);
+    },
+
+    // Controls navigation to billing window modal which is triggered from the application UI.
+    // For example: pressing "View Billing" link in navigation menu. It's main side effect is
+    // remembering the route from which the action has been triggered - "previousRoute" so it
+    // could be reused when closing billing window
     openBillingWindow(currentRoute, childRoute) {
         this.set('previousRoute', currentRoute);
+
+        // Ensures correct "getIframeURL" calculation when syncing iframe location
+        // in setBillingWindowOpen
+        window.location.hash = childRoute || '/billing';
 
         this.router.transitionTo(childRoute || '/billing');
     },
 
     closeBillingWindow() {
         this.set('billingWindowOpen', false);
-        this.set('action', null);
 
         let transitionRoute = this.get('previousRoute') || '/';
         this.router.transitionTo(transitionRoute);
     },
 
-    endpoint: computed('config.billingUrl', 'billingWindowOpen', 'action', function () {
-        let url = this.config.get('billingUrl');
-
-        if (this.router.currentRoute && this.router.currentRoute.name === 'billing.billing-sub') {
-            url += `/${this.router.currentRoute.params.sub}`;
-        }
-
-        if (this.get('action')) {
-            url += `?action=${this.get('action')}`;
-        }
-
-        return url;
-    })
+    getBillingIframe() {
+        return document.getElementById('billing-frame');
+    }
 });

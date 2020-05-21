@@ -7,9 +7,9 @@ export default Component.extend({
     ghostPaths: service(),
     ajax: service(),
 
-    didRender() {
-        let iframe = this.element.querySelector('#billing-frame');
+    didInsertElement() {
         let fetchingSubscription = false;
+        this.billing.getBillingIframe().src = this.billing.getIframeURL();
 
         window.addEventListener('message', (event) => {
             if (event && event.data && event.data.request === 'token') {
@@ -17,7 +17,7 @@ export default Component.extend({
 
                 this.ajax.request(ghostIdentityUrl).then((response) => {
                     const token = response && response.identities && response.identities[0] && response.identities[0].token;
-                    iframe.contentWindow.postMessage({
+                    this.billing.getBillingIframe().contentWindow.postMessage({
                         request: 'token',
                         response: token
                     }, '*');
@@ -27,7 +27,7 @@ export default Component.extend({
                 //       receiving a 'token' request is an indication that page is ready
                 if (!fetchingSubscription && !this.billing.get('subscription')) {
                     fetchingSubscription = true;
-                    iframe.contentWindow.postMessage({
+                    this.billing.getBillingIframe().contentWindow.postMessage({
                         query: 'getSubscription',
                         response: 'subscription'
                     }, '*');
