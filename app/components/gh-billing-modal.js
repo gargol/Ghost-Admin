@@ -16,6 +16,11 @@ export default Component.extend({
         this._setupShortcuts();
     },
 
+    willDestroyElement() {
+        this._super(...arguments);
+        this._removeShortcuts();
+    },
+
     actions: {
         closeModal() {
             this.billing.closeBillingWindow();
