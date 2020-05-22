@@ -14,11 +14,13 @@ export default Service.extend({
     init() {
         this._super(...arguments);
 
-        window.addEventListener('message', (event) => {
-            if (event && event.data && event.data.route) {
-                this.handleRouteChangeInIframe(event.data.route);
-            }
-        });
+        if (this.config.get('billingUrl')) {
+            window.addEventListener('message', (event) => {
+                if (event && event.data && event.data.route) {
+                    this.handleRouteChangeInIframe(event.data.route);
+                }
+            });
+        }
     },
 
     handleRouteChangeInIframe(destinationRoute) {
