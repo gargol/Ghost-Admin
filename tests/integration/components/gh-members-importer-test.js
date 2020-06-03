@@ -84,6 +84,7 @@ describe('Integration: Component: gh-members-importer', function () {
 
         await render(hbs`{{gh-members-importer url=uploadUrl}}`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
+        await click('.gh-btn-green');
 
         expect(server.handledRequests.length).to.equal(1);
         expect(server.handledRequests[0].url).to.equal('/ghost/api/v3/members/csv/');
@@ -97,6 +98,7 @@ describe('Integration: Component: gh-members-importer', function () {
 
         await render(hbs`{{gh-members-importer url=uploadUrl uploadSuccess=(action uploadSuccess)}}`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
+        await click('.gh-btn-green');
 
         expect(uploadSuccess.calledOnce).to.be.true;
         expect(uploadSuccess.firstCall.args[0]).to.eql({url: '/content/images/test.png'});
@@ -110,6 +112,7 @@ describe('Integration: Component: gh-members-importer', function () {
 
         await render(hbs`{{gh-members-importer url=uploadUrl uploadSuccess=(action uploadSuccess)}}`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
+        await click('.gh-btn-green');
 
         await settled();
         expect(uploadSuccess.calledOnce).to.be.false;
@@ -136,6 +139,7 @@ describe('Integration: Component: gh-members-importer', function () {
 
         await render(hbs`{{gh-members-importer url=uploadUrl uploadStarted=(action uploadStarted)}}`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
+        await click('.gh-btn-green');
 
         expect(uploadStarted.calledOnce).to.be.true;
     });
@@ -148,6 +152,7 @@ describe('Integration: Component: gh-members-importer', function () {
 
         await render(hbs`{{gh-members-importer url=uploadUrl uploadFinished=(action uploadFinished)}}`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
+        await click('.gh-btn-green');
 
         expect(uploadFinished.calledOnce).to.be.true;
     });
@@ -160,6 +165,7 @@ describe('Integration: Component: gh-members-importer', function () {
 
         await render(hbs`{{gh-members-importer url=uploadUrl uploadFinished=(action uploadFinished)}}`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
+        await click('.gh-btn-green');
 
         expect(uploadFinished.calledOnce).to.be.true;
     });
@@ -168,6 +174,7 @@ describe('Integration: Component: gh-members-importer', function () {
         stubFailedUpload(server, 415, 'UnsupportedMediaTypeError');
         await render(hbs`{{gh-members-importer url=uploadUrl}}`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
+        await click('.gh-btn-green');
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
         expect(find('.failed').textContent).to.match(/The file type you uploaded is not supported/);
@@ -179,6 +186,7 @@ describe('Integration: Component: gh-members-importer', function () {
         stubFailedUpload(server, 413, 'RequestEntityTooLargeError');
         await render(hbs`{{gh-members-importer url=uploadUrl}}`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
+        await click('.gh-btn-green');
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
         expect(find('.failed').textContent).to.match(/The file you uploaded was larger/);
@@ -190,6 +198,7 @@ describe('Integration: Component: gh-members-importer', function () {
         });
         await render(hbs`{{gh-members-importer url=uploadUrl}}`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
+        await click('.gh-btn-green');
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
         expect(find('.failed').textContent).to.match(/The file you uploaded was larger/);
@@ -199,6 +208,7 @@ describe('Integration: Component: gh-members-importer', function () {
         stubFailedUpload(server, 400, 'UnknownError');
         await render(hbs`{{gh-members-importer url=uploadUrl}}`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
+        await click('.gh-btn-green');
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
         expect(find('.failed').textContent).to.match(/Error: UnknownError/);
@@ -210,6 +220,7 @@ describe('Integration: Component: gh-members-importer', function () {
         });
         await render(hbs`{{gh-members-importer url=uploadUrl}}`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
+        await click('.gh-btn-green');
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
         expect(find('.failed').textContent).to.match(/Something went wrong/);
@@ -224,6 +235,7 @@ describe('Integration: Component: gh-members-importer', function () {
 
         await render(hbs`{{gh-members-importer url=uploadUrl}}`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
+        await click('.gh-btn-green');
 
         expect(showAPIError.calledOnce).to.be.true;
     });
@@ -236,6 +248,7 @@ describe('Integration: Component: gh-members-importer', function () {
         stubFailedUpload(server, 400, 'UnknownError');
         await render(hbs`{{gh-members-importer url=uploadUrl}}`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
+        await click('.gh-btn-green');
 
         expect(showAPIError.called).to.be.false;
     });
@@ -246,6 +259,7 @@ describe('Integration: Component: gh-members-importer', function () {
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
         await click('.gh-btn-green');
 
+        await click('[data-test-upload-try-again-button]');
         expect(findAll('input[type="file"]').length).to.equal(1);
     });
 
@@ -271,7 +285,7 @@ describe('Integration: Component: gh-members-importer', function () {
         expect(find('.gh-image-uploader').classList.contains('-drag-over'), 'has drag-over class').to.be.false;
     });
 
-    it('triggers file upload on file drop', async function () {
+    it('does not triggers file upload on file drop', async function () {
         let uploadSuccess = sinon.spy();
         // eslint-disable-next-line new-cap
         let drop = $.Event('drop', {
@@ -291,8 +305,7 @@ describe('Integration: Component: gh-members-importer', function () {
 
         await settled();
 
-        expect(uploadSuccess.calledOnce).to.be.true;
-        expect(uploadSuccess.firstCall.args[0]).to.eql({url: '/content/images/test.png'});
+        expect(uploadSuccess.called).not.to.be.true;
     });
 
     it('validates extension by default', async function () {
@@ -332,6 +345,7 @@ describe('Integration: Component: gh-members-importer', function () {
             validate=(action validate)}}`);
 
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
+        await click('.gh-btn-green');
 
         await settled();
 

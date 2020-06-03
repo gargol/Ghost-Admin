@@ -118,15 +118,7 @@ export default Component.extend({
             this.set('file', file);
             this.fileSelected(file);
 
-            if (validationResult === true) {
-                run.schedule('actions', this, function () {
-                    this.generateRequest();
-
-                    if (resetInput) {
-                        resetInput();
-                    }
-                });
-            } else {
+            if (validationResult !== true) {
                 this._uploadFailed(validationResult);
 
                 if (resetInput) {
