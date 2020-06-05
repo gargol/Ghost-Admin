@@ -97,6 +97,7 @@ export default ModalComponent.extend({
 
         reset() {
             this.set('failureMessage', null);
+            this.set('labels', {labels: []});
             this.set('file', null);
         },
 
