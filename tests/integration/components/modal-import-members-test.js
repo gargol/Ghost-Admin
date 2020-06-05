@@ -53,7 +53,7 @@ describe('Integration: Component: modal-import-members-test', function () {
         await render(hbs`{{modal-import-members}}`);
 
         expect(find('h1').textContent.trim(), 'default header')
-            .to.equal('Import members');
+            .to.equal('Import');
         expect(find('.description').textContent.trim(), 'upload label')
             .to.equal('Select or drag-and-drop a CSV File');
     });
@@ -64,8 +64,8 @@ describe('Integration: Component: modal-import-members-test', function () {
         await render(hbs`{{modal-import-members}}`);
         await fileUpload('input[type="file"]', ['membersfile'], {name: 'test.csv'});
 
-        expect(find('.description').textContent.trim(), 'upload label')
-            .to.equal('test.csv');
+        expect(find('label').textContent.trim(), 'labels label')
+            .to.equal('Labels');
         expect(find('.gh-btn-green').textContent).to.equal('Import');
 
         await click('.gh-btn-green');
@@ -74,7 +74,7 @@ describe('Integration: Component: modal-import-members-test', function () {
         expect(server.handledRequests[0].url).to.equal('/ghost/api/v3/admin/members/csv/');
     });
 
-    it('displays invalid file type error', async function () {
+    it('displays server error', async function () {
         stubFailedUpload(server, 415, 'UnsupportedMediaTypeError');
         await render(hbs`{{modal-import-members}}`);
         await fileUpload('input[type="file"]', ['membersfile'], {name: 'test.csv'});
@@ -82,8 +82,6 @@ describe('Integration: Component: modal-import-members-test', function () {
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
         expect(find('.failed').textContent).to.match(/The file type you uploaded is not supported/);
-        expect(findAll('.gh-btn-green').length, 'reset button is displayed').to.equal(1);
-        expect(find('.gh-btn-green').textContent).to.equal('Try Again');
     });
 
     it('displays file too large for server error', async function () {

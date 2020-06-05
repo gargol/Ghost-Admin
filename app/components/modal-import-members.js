@@ -99,6 +99,7 @@ export default ModalComponent.extend({
             this.set('failureMessage', null);
             this.set('labels', {labels: []});
             this.set('file', null);
+            this.set('failureMessage', null);
         },
 
         upload() {
