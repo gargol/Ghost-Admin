@@ -26,6 +26,7 @@ export default ModalComponent.extend({
     uploadPercentage: 0,
     response: null,
     failureMessage: null,
+    labels: null,
 
     // Allowed actions
     confirm: () => {},
@@ -48,6 +49,12 @@ export default ModalComponent.extend({
 
         formData.append(paramName, file);
 
+        if (this.labels.labels.length) {
+            this.labels.labels.forEach((label) => {
+                formData.append('labels', label.name);
+            });
+        }
+
         return formData;
     }),
 
@@ -67,6 +74,9 @@ export default ModalComponent.extend({
     init() {
         this._super(...arguments);
         this.extensions = ['csv'];
+
+        // NOTE: nested label come from specific "gh-member-label-input" parameters, would be good to refactor
+        this.labels = {labels: []};
     },
 
     actions: {
