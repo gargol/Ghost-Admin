@@ -3,11 +3,10 @@ import Pretender from 'pretender';
 import Service from '@ember/service';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
-import {UnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
-import {click, find, findAll, render, settled, triggerEvent, pauseTest} from '@ember/test-helpers';
-import {createFile, fileUpload} from '../../helpers/file-upload';
+import {click, find, findAll, render, settled, triggerEvent} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
+import {fileUpload} from '../../helpers/file-upload';
 import {run} from '@ember/runloop';
 import {setupRenderingTest} from 'ember-mocha';
 
