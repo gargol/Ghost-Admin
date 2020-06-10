@@ -21,7 +21,6 @@ export default ModalComponent.extend({
     dragClass: null,
     file: null,
     paramName: 'membersfile',
-    extensions: null,
     uploading: false,
     uploadPercentage: 0,
     response: null,
@@ -73,7 +72,6 @@ export default ModalComponent.extend({
 
     init() {
         this._super(...arguments);
-        this.extensions = ['csv'];
 
         // NOTE: nested label come from specific "gh-member-label-input" parameters, would be good to refactor
         this.labels = {labels: []};
@@ -221,9 +219,8 @@ export default ModalComponent.extend({
 
     _validateFileType(file) {
         let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
-        let extensions = this.extensions;
 
-        if (!extension || extensions.indexOf(extension.toLowerCase()) === -1) {
+        if (['csv'].indexOf(extension.toLowerCase()) === -1) {
             return new UnsupportedMediaTypeError();
         }
 
