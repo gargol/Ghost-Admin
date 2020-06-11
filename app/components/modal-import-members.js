@@ -1,5 +1,6 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
+import papaparse from 'papaparse';
 import {
     UnsupportedMediaTypeError,
     isRequestEntityTooLargeError,
@@ -15,11 +16,13 @@ import {inject as service} from '@ember/service';
 export default ModalComponent.extend({
     ajax: service(),
     notifications: service(),
+    memberImportValidator: service(),
 
     labelText: 'Select or drag-and-drop a CSV File',
 
     dragClass: null,
     file: null,
+    fileData: null,
     paramName: 'membersfile',
     uploading: false,
     uploadPercentage: 0,
@@ -87,6 +90,25 @@ export default ModalComponent.extend({
             } else {
                 this.set('file', file);
                 this.set('failureMessage', null);
+
+                papaparse.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    worker: true, // NOTE: compare speed and file sizes with/without this flag
+                    complete: (results) => {
+                        this.set('fileData', results.data);
+
+                        this.memberImportValidator.check(results.data)
+                            .then((result) => {
+                                if (!result) {
+                                    // TODO: process errors here
+                                }
+                            });
+                    },
+                    error: (error) => {
+                        this._uploadFailed(error);
+                    }
+                });
             }
         },
 
@@ -94,6 +116,7 @@ export default ModalComponent.extend({
             this.set('failureMessage', null);
             this.set('labels', {labels: []});
             this.set('file', null);
+            this.set('fileData', null);
             this.set('failureMessage', null);
         },
 
