@@ -12,9 +12,40 @@ export default Service.extend({
             return [new MemberImportError('File is empty, nothing to import. Please select a different file.')];
         }
 
+        let validatedSet = this._sampleData(data);
+        let validationResults = [];
+
+        // check can be done on whole set as it won't be too slow
+        const hasStripeId = this._containsRecordsWithStripeId(validatedSet);
+
+        const emailValidation = this._checkEmails(data);
+
+        if (emailValidation !== true) {
+            validationResults.push(new MemberImportError('Emails in provided data don\'t appear to be valid email addresses.'));
+        }
+
+        if (hasStripeId) {
+            // check can be done on whole set as it won't be too slow
+            if (!this.membersUtils.isStripeEnabled) {
+                validationResults.push(new MemberImportError(`<strong>Missing Stripe connection</strong><br>You need to <a href="#/settings/labs">connect to Stripe</a> to import Stripe customers.`));
+            } else {
+                let stripeSeverValidation = await this._checkStripeServer(validatedSet);
+                if (stripeSeverValidation !== true) {
+                    validationResults.push(new MemberImportError(`<strong>Wrong Stripe account</strong><br>The CSV contains Stripe customers from a different Stripe account. Make sure you're connected to the correct <a href="#/settings/labs">Stripe account</a>.`));
+                }
+            }
+        }
+
+        if (validationResults.length) {
+            return validationResults;
+        } else {
+            return true;
+        }
+    },
+
+    _sampleData(data) {
         let validatedSet = [];
         let validationSampleSize = 30;
-        let validationResults = [];
 
         if (data && data.length > validationSampleSize) {
             // validated data size is larger than sample size take 3
@@ -36,26 +67,7 @@ export default Service.extend({
             validatedSet = data;
         }
 
-        // check can be done on whole set as it won't be too slow
-        const hasStripeId = this._containsRecordsWithStripeId(validatedSet);
-
-        if (hasStripeId) {
-            // check can be done on whole set as it won't be too slow
-            if (!this.membersUtils.isStripeEnabled) {
-                validationResults.push(new MemberImportError(`<strong>Missing Stripe connection</strong><br>You need to <a href="#/settings/labs">connect to Stripe</a> to import Stripe customers.`));
-            } else {
-                let stripeSeverValidation = await this._checkStripeServer(validatedSet);
-                if (stripeSeverValidation !== true) {
-                    validationResults.push(new MemberImportError(`<strong>Wrong Stripe account</strong><br>The CSV contains Stripe customers from a different Stripe account. Make sure you're connected to the correct <a href="#/settings/labs">Stripe account</a>.`));
-                }
-            }
-        }
-
-        if (validationResults.length) {
-            return validationResults;
-        } else {
-            return true;
-        }
+        return validatedSet;
     },
 
     _containsRecordsWithStripeId(validatedSet) {
