@@ -19,12 +19,16 @@ export default Service.extend({
         let validationResults = [];
 
         const hasStripeId = !!mapping.stripe_customer_id;
+        const hasEmails = !!mapping.email;
 
-        // check can be done on whole set as it won't be too slow
-        const emailValidation = this._checkEmails(data);
-
-        if (emailValidation !== true) {
-            validationResults.push(new MemberImportError('Emails in provided data don\'t appear to be valid email addresses.'));
+        if (!hasEmails) {
+            validationResults.push(new MemberImportError('No email addresses found in provided data.'));
+        } else {
+            // check can be done on whole set as it won't be too slow
+            const invalidEmailsCount = this._checkEmails(data, mapping);
+            if (invalidEmailsCount) {
+                validationResults.push(new MemberImportError(`Invalid email address (${invalidEmailsCount})`));
+            }
         }
 
         if (hasStripeId) {
@@ -32,7 +36,7 @@ export default Service.extend({
             if (!this.membersUtils.isStripeEnabled) {
                 validationResults.push(new MemberImportError(`<strong>Missing Stripe connection</strong><br>You need to <a href="#/settings/labs">connect to Stripe</a> to import Stripe customers.`));
             } else {
-                let stripeSeverValidation = await this._checkStripeServer(sampledData);
+                let stripeSeverValidation = await this._checkStripeServer(sampledData, mapping);
                 if (stripeSeverValidation !== true) {
                     validationResults.push(new MemberImportError(`<strong>Wrong Stripe account</strong><br>The CSV contains Stripe customers from a different Stripe account. Make sure you're connected to the correct <a href="#/settings/labs">Stripe account</a>.`));
                 }
@@ -139,20 +143,22 @@ export default Service.extend({
         return !!memberWithStripeId;
     },
 
-    _checkEmails(validatedSet) {
-        let result = true;
-
+    _checkEmails(validatedSet, mapping) {
+        let invalidCount = 0;
+        debugger
         validatedSet.forEach((member) => {
-            if (!member.email) {
-                result = false;
+            let emailValue = member[mapping.email];
+
+            if (!emailValue) {
+                invalidCount += 1;
             }
 
-            if (member.email && !validator.isEmail(member.email)) {
-                result = false;
+            if (emailValue && !validator.isEmail(member.email)) {
+                invalidCount += 1;
             }
         });
 
-        return result;
+        return invalidCount;
     },
 
     _hasDuplicateStripeIds(validatedSet) {
@@ -189,14 +195,25 @@ export default Service.extend({
         return result;
     },
 
-    async _checkStripeServer(validatedSet) {
+    async _checkStripeServer(validatedSet, mapping) {
         const url = this.ghostPaths.get('url').api('members/upload/validate');
+        const mappedValidatedSet = validatedSet.map((entry) => {
+            if (mapping.email !== 'email') {
+                entry.email = entry[mapping.email];
+                delete entry[mapping.email];
+            }
+
+            if (mapping.stripe_customer_id !== 'stripe_customer_id') {
+                entry.stripe_customer_id = entry[mapping.stripe_customer_id];
+                delete entry[mapping.stripe_customer_id];
+            }
+        });
 
         let response;
         try {
             response = await this.ajax.post(url, {
                 data: {
-                    members: validatedSet
+                    members: mappedValidatedSet
                 }
             });
         } catch (e) {
