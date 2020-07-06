@@ -14,10 +14,11 @@ export default Service.extend({
         }
 
         let sampledData = this._sampleData(data);
+        let mapping = this._detectDataTypes(sampledData);
 
         let validationResults = [];
 
-        const hasStripeId = this._containsRecordsWithStripeId(sampledData);
+        const hasStripeId = !!mapping.stripe_customer_id;
 
         // check can be done on whole set as it won't be too slow
         const emailValidation = this._checkEmails(data);
@@ -94,6 +95,43 @@ export default Service.extend({
         }
 
         return validatedSet;
+    },
+
+    /**
+     * Detects validated data types:
+     *  1. email
+     *  2. stripe_customer_id
+     *
+     * Returned "mapping" object contains mappings that could be accepted by the API
+     * to map validated types.
+     * @param {Array} data sampled data containing non empty values
+     */
+    _detectDataTypes(data) {
+        let mapping = {};
+        let i = 0;
+        // loopping through all sampled data until needed data types are detected
+        while (i <= (data.length - 1)) {
+            if (mapping.email && mapping.stripe_customer_id) {
+                break;
+            }
+
+            let entry = data[i];
+            for (const [key, value] of Object.entries(entry)) {
+                if (!mapping.email && validator.isEmail(value)) {
+                    mapping.email = key;
+                    continue;
+                }
+
+                if (!mapping.stripe_customer_id && value && value.startsWith && value.startsWith('cus_')) {
+                    mapping.stripe_customer_id = key;
+                    continue;
+                }
+            }
+
+            i += 1;
+        }
+
+        return mapping;
     },
 
     _containsRecordsWithStripeId(validatedSet) {

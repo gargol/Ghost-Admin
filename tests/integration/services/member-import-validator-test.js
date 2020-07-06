@@ -75,7 +75,7 @@ describe('Integration: Service: member-import-validator', function () {
         expect(result[0].message).to.equal('Emails in provided data don\'t appear to be valid email addresses.');
     });
 
-    describe('data sampling method', function (){
+    describe('data sampling method', function () {
         it('returns whole data set when sampled size is less then default 30', async function () {
             this.owner.register('service:membersUtils', Service.extend({
                 isStripeEnabled: false
@@ -149,6 +149,44 @@ describe('Integration: Service: member-import-validator', function () {
             expect(result[1].other_prop).to.equal('non empty 2');
             expect(result[2].email).to.equal('email4@example.com');
             expect(result[2].other_prop).to.equal('non empty 5');
+        });
+    });
+
+    describe('data detection method', function () {
+        it('correctly detects only email mapping', async function () {
+            this.owner.register('service:membersUtils', Service.extend({
+                isStripeEnabled: false
+            }));
+
+            let service = this.owner.lookup('service:member-import-validator');
+
+            const result = service._detectDataTypes([{
+                correo_electronico: 'email@example.com'
+            }, {
+                correo_electronico: 'email2@example.com'
+            }]);
+
+            expect(result.email).to.equal('correo_electronico');
+            expect(result.stripe_customer_id).to.equal(undefined);
+        });
+
+        it('correctly detects only email mapping', async function () {
+            this.owner.register('service:membersUtils', Service.extend({
+                isStripeEnabled: false
+            }));
+
+            let service = this.owner.lookup('service:member-import-validator');
+
+            const result = service._detectDataTypes([{
+                correo_electronico: 'email@example.com',
+                stripe_id: ''
+            }, {
+                correo_electronico: '',
+                stripe_id: 'cus_'
+            }]);
+
+            expect(result.email).to.equal('correo_electronico');
+            expect(result.stripe_customer_id).to.equal('stripe_id');
         });
     });
 });
