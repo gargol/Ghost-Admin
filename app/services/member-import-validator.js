@@ -13,7 +13,7 @@ export default Service.extend({
         }
 
         let validatedSet = [];
-        let validationSampleSize = 15;
+        let validationSampleSize = 30;
         let validationResults = [];
 
         if (data && data.length > validationSampleSize) {
