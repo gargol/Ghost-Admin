@@ -10,42 +10,44 @@ export default Service.extend({
 
     async check(data) {
         if (!data || !data.length) {
-            return [new MemberImportError({
-                message: 'File is empty, nothing to import. Please select a different file.'
-            })];
+            return {
+                validationErrors: [new MemberImportError({
+                    message: 'File is empty, nothing to import. Please select a different file.'
+                })]
+            };
         }
 
         let sampledData = this._sampleData(data);
         let mapping = this._detectDataTypes(sampledData);
 
-        let validationResults = [];
+        let validationErrors = [];
 
         const hasStripeIds = !!mapping.stripe_customer_id;
         const hasEmails = !!mapping.email;
 
         if (!hasEmails) {
-            validationResults.push(new MemberImportError({
+            validationErrors.push(new MemberImportError({
                 message: 'No email addresses found in provided data.'
             }));
         } else {
             // check can be done on whole set as it won't be too slow
             const {invalidCount, emptyCount, duplicateCount} = this._checkEmails(data, mapping);
             if (invalidCount) {
-                validationResults.push(new MemberImportError({
+                validationErrors.push(new MemberImportError({
                     message: `Invalid email address (${invalidCount})`,
                     type: 'warning'
                 }));
             }
 
             if (emptyCount) {
-                validationResults.push(new MemberImportError({
+                validationErrors.push(new MemberImportError({
                     message: `Missing email address (${emptyCount})`,
                     type: 'warning'
                 }));
             }
 
             if (duplicateCount) {
-                validationResults.push(new MemberImportError({
+                validationErrors.push(new MemberImportError({
                     message: `Duplicate email address (${duplicateCount})`,
                     type: 'warning'
                 }));
@@ -57,7 +59,7 @@ export default Service.extend({
             const {totalCount, duplicateCount} = this._checkStripeIds(data, mapping);
 
             if (!this.membersUtils.isStripeEnabled) {
-                validationResults.push(new MemberImportError({
+                validationErrors.push(new MemberImportError({
                     message: 'Missing stripe connection',
                     context: `${totalCount} Stripe customers won't be imported. You need to <a href="#/settings/labs">connect to Stripe</a> to import stripe customers.`,
                     type: 'warning'
@@ -65,7 +67,7 @@ export default Service.extend({
             } else {
                 let stripeSeverValidation = await this._checkStripeServer(sampledData, mapping);
                 if (stripeSeverValidation !== true) {
-                    validationResults.push(new MemberImportError({
+                    validationErrors.push(new MemberImportError({
                         message: 'Wrong Stripe account',
                         context: `The CSV contains Stripe customers from a different Stripe account. These members will not be imported. Make sure you're connected to the correct <a href="#/settings/labs">Stripe account</a>.`,
                         type: 'warning'
@@ -74,18 +76,14 @@ export default Service.extend({
             }
 
             if (duplicateCount) {
-                validationResults.push(new MemberImportError({
+                validationErrors.push(new MemberImportError({
                     message: `Duplicate Stripe ID (${duplicateCount})`,
                     type: 'warning'
                 }));
             }
         }
 
-        if (validationResults.length) {
-            return validationResults;
-        } else {
-            return true;
-        }
+        return {validationErrors, mapping};
     },
 
     /**
