@@ -35,14 +35,19 @@
         {{#if (and this.filePresent (not this.failureMessage))}}
             {{#if this.validating}}
                 {{#if validationErrors}}
-                    <div class="failed flex items-start gh-members-upload-errorcontainer gh-members-upload-warningmessage">
+                    <div class="flex">
                         <div class="mr2">{{svg-jar "warning" class="nudge-top--2 w5 h5 fill-yellow-d1"}}</div>
-                        <div>
-                            {{#each validationErrors as |error|}}
-                                <p class="ma0 pa0 gh-members-import-errorheading">{{{error.message}}}</p>
-                            {{/each}}
-                        </div>
+                        <p>The CSV contains errors some members will not be imported</p>
                     </div>
+
+                    {{#each validationErrors as |error|}}
+                    <div class="failed items-start gh-members-upload-errorcontainer gh-members-upload-warningmessage">
+                        <p class="ma0 pa0 fw6 gh-members-import-errorheading">{{{error.message}}}</p>
+                        {{#if error.context}}
+                            <p class="ma0 pa0 gh-members-import-errorheading">{{{error.context}}}</p>
+                        {{/if}}
+                    </div>
+                    {{/each}}
                 {{else}}
                     Validating...
                 {{/if}}

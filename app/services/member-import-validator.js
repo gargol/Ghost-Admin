@@ -10,7 +10,9 @@ export default Service.extend({
 
     async check(data) {
         if (!data || !data.length) {
-            return [new MemberImportError('File is empty, nothing to import. Please select a different file.')];
+            return [new MemberImportError({
+                message: 'File is empty, nothing to import. Please select a different file.'
+            })];
         }
 
         let sampledData = this._sampleData(data);
@@ -18,28 +20,64 @@ export default Service.extend({
 
         let validationResults = [];
 
-        const hasStripeId = !!mapping.stripe_customer_id;
+        const hasStripeIds = !!mapping.stripe_customer_id;
         const hasEmails = !!mapping.email;
 
         if (!hasEmails) {
-            validationResults.push(new MemberImportError('No email addresses found in provided data.'));
+            validationResults.push(new MemberImportError({
+                message: 'No email addresses found in provided data.'
+            }));
         } else {
             // check can be done on whole set as it won't be too slow
-            const invalidEmailsCount = this._checkEmails(data, mapping);
-            if (invalidEmailsCount) {
-                validationResults.push(new MemberImportError(`Invalid email address (${invalidEmailsCount})`));
+            const {invalidCount, emptyCount, duplicateCount} = this._checkEmails(data, mapping);
+            if (invalidCount) {
+                validationResults.push(new MemberImportError({
+                    message: `Invalid email address (${invalidCount})`,
+                    type: 'warning'
+                }));
+            }
+
+            if (emptyCount) {
+                validationResults.push(new MemberImportError({
+                    message: `Missing email address (${emptyCount})`,
+                    type: 'warning'
+                }));
+            }
+
+            if (duplicateCount) {
+                validationResults.push(new MemberImportError({
+                    message: `Duplicate email address (${duplicateCount})`,
+                    type: 'warning'
+                }));
             }
         }
 
-        if (hasStripeId) {
+        if (hasStripeIds) {
             // check can be done on whole set as it won't be too slow
+            const {totalCount, duplicateCount} = this._checkStripeIds(data, mapping);
+
             if (!this.membersUtils.isStripeEnabled) {
-                validationResults.push(new MemberImportError(`<strong>Missing Stripe connection</strong><br>You need to <a href="#/settings/labs">connect to Stripe</a> to import Stripe customers.`));
+                validationResults.push(new MemberImportError({
+                    message: 'Missing stripe connection',
+                    context: `${totalCount} Stripe customers won't be imported. You need to <a href="#/settings/labs">connect to Stripe</a> to import stripe customers.`,
+                    type: 'warning'
+                }));
             } else {
                 let stripeSeverValidation = await this._checkStripeServer(sampledData, mapping);
                 if (stripeSeverValidation !== true) {
-                    validationResults.push(new MemberImportError(`<strong>Wrong Stripe account</strong><br>The CSV contains Stripe customers from a different Stripe account. Make sure you're connected to the correct <a href="#/settings/labs">Stripe account</a>.`));
+                    validationResults.push(new MemberImportError({
+                        message: 'Wrong Stripe account',
+                        context: `The CSV contains Stripe customers from a different Stripe account. These members will not be imported. Make sure you're connected to the correct <a href="#/settings/labs">Stripe account</a>.`,
+                        type: 'warning'
+                    }));
                 }
+            }
+
+            if (duplicateCount) {
+                validationResults.push(new MemberImportError({
+                    message: `Duplicate Stripe ID (${duplicateCount})`,
+                    type: 'warning'
+                }));
             }
         }
 
@@ -144,41 +182,66 @@ export default Service.extend({
     },
 
     _checkEmails(validatedSet, mapping) {
+        let emptyCount = 0;
         let invalidCount = 0;
-        debugger
+        let duplicateCount = 0;
+        let emailMap = {};
+
         validatedSet.forEach((member) => {
             let emailValue = member[mapping.email];
-
             if (!emailValue) {
-                invalidCount += 1;
+                emptyCount += 1;
             }
 
-            if (emailValue && !validator.isEmail(member.email)) {
+            if (emailValue && !validator.isEmail(emailValue)) {
                 invalidCount += 1;
+            } else if (emailValue) {
+                if (emailMap[emailValue]) {
+                    emailMap[emailValue] += 1;
+                    duplicateCount += 1;
+                } else {
+                    emailMap[emailValue] = 1;
+                }
             }
         });
 
-        return invalidCount;
+        return {invalidCount, emptyCount, duplicateCount};
     },
 
-    _hasDuplicateStripeIds(validatedSet) {
-        const customersMap = validatedSet.reduce((acc, member) => {
-            if (member.stripe_customer_id && member.stripe_customer_id !== 'undefined') {
-                if (acc[member.stripe_customer_id]) {
-                    acc[member.stripe_customer_id] += 1;
+    _countStripeRecors(validatedSet, mapping) {
+        let count = 0;
+
+        validatedSet.forEach((member) => {
+            if (!isEmpty(member[mapping.stripe_customer_id])) {
+                count += 1;
+            }
+        });
+
+        return count;
+    },
+
+    _checkStripeIds(validatedSet, mapping) {
+        let totalCount = 0;
+        let duplicateCount = 0;
+
+        validatedSet.reduce((acc, member) => {
+            let stripeCustomerIdValue = member[mapping.stripe_customer_id];
+
+            if (stripeCustomerIdValue && stripeCustomerIdValue !== 'undefined') {
+                totalCount += 1;
+
+                if (acc[stripeCustomerIdValue]) {
+                    acc[stripeCustomerIdValue] += 1;
+                    duplicateCount += 1;
                 } else {
-                    acc[member.stripe_customer_id] = 1;
+                    acc[stripeCustomerIdValue] = 1;
                 }
             }
 
             return acc;
         }, {});
 
-        for (const key in customersMap) {
-            if (customersMap[key] > 1) {
-                return true;
-            }
-        }
+        return {totalCount, duplicateCount};
     },
 
     _checkContainsStripeIDs(validatedSet) {
@@ -198,15 +261,9 @@ export default Service.extend({
     async _checkStripeServer(validatedSet, mapping) {
         const url = this.ghostPaths.get('url').api('members/upload/validate');
         const mappedValidatedSet = validatedSet.map((entry) => {
-            if (mapping.email !== 'email') {
-                entry.email = entry[mapping.email];
-                delete entry[mapping.email];
-            }
-
-            if (mapping.stripe_customer_id !== 'stripe_customer_id') {
-                entry.stripe_customer_id = entry[mapping.stripe_customer_id];
-                delete entry[mapping.stripe_customer_id];
-            }
+            return {
+                stripe_customer_id: entry[mapping.stripe_customer_id]
+            };
         });
 
         let response;
