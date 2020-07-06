@@ -74,4 +74,81 @@ describe('Integration: Service: member-import-validator', function () {
         expect(result.length).to.equal(1);
         expect(result[0].message).to.equal('Emails in provided data don\'t appear to be valid email addresses.');
     });
+
+    describe('data sampling method', function (){
+        it('returns whole data set when sampled size is less then default 30', async function () {
+            this.owner.register('service:membersUtils', Service.extend({
+                isStripeEnabled: false
+            }));
+
+            let service = this.owner.lookup('service:member-import-validator');
+
+            const result = await service._sampleData([{
+                email: 'email@example.com'
+            }, {
+                email: 'email2@example.com'
+            }]);
+
+            expect(result.length).to.equal(2);
+        });
+
+        it('returns dataset with sample size for non empty values only', async function () {
+            this.owner.register('service:membersUtils', Service.extend({
+                isStripeEnabled: false
+            }));
+
+            let service = this.owner.lookup('service:member-import-validator');
+            let data = [{
+                email: null
+            }, {
+                email: 'email2@example.com'
+            }, {
+                email: 'email3@example.com'
+            }, {
+                email: 'email4@example.com'
+            }, {
+                email: ''
+            }];
+
+            const result = await service._sampleData(data, 3);
+
+            expect(result.length).to.equal(3);
+            expect(result[0].email).to.equal('email2@example.com');
+            expect(result[1].email).to.equal('email3@example.com');
+            expect(result[2].email).to.equal('email4@example.com');
+        });
+
+        it('returns dataset with sample size for non empty values for objects with multiple properties', async function () {
+            this.owner.register('service:membersUtils', Service.extend({
+                isStripeEnabled: false
+            }));
+
+            let service = this.owner.lookup('service:member-import-validator');
+            let data = [{
+                email: null,
+                other_prop: 'non empty 1'
+            }, {
+                email: 'email2@example.com',
+                other_prop: 'non empty 2'
+            }, {
+                email: 'email3@example.com',
+                other_prop: ''
+            }, {
+                email: 'email4@example.com'
+            }, {
+                email: '',
+                other_prop: 'non empty 5'
+            }];
+
+            const result = await service._sampleData(data, 3);
+
+            expect(result.length).to.equal(3);
+            expect(result[0].email).to.equal('email2@example.com');
+            expect(result[0].other_prop).to.equal('non empty 1');
+            expect(result[1].email).to.equal('email3@example.com');
+            expect(result[1].other_prop).to.equal('non empty 2');
+            expect(result[2].email).to.equal('email4@example.com');
+            expect(result[2].other_prop).to.equal('non empty 5');
+        });
+    });
 });

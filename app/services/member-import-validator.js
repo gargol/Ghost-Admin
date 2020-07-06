@@ -1,6 +1,7 @@
 import MemberImportError from 'ghost-admin/errors/member-import-error';
 import Service, {inject as service} from '@ember/service';
 import validator from 'validator';
+import {isEmpty} from '@ember/utils';
 
 export default Service.extend({
     ajax: service(),
@@ -12,12 +13,13 @@ export default Service.extend({
             return [new MemberImportError('File is empty, nothing to import. Please select a different file.')];
         }
 
-        let validatedSet = this._sampleData(data);
+        let sampledData = this._sampleData(data);
+
         let validationResults = [];
 
-        // check can be done on whole set as it won't be too slow
-        const hasStripeId = this._containsRecordsWithStripeId(validatedSet);
+        const hasStripeId = this._containsRecordsWithStripeId(sampledData);
 
+        // check can be done on whole set as it won't be too slow
         const emailValidation = this._checkEmails(data);
 
         if (emailValidation !== true) {
@@ -29,7 +31,7 @@ export default Service.extend({
             if (!this.membersUtils.isStripeEnabled) {
                 validationResults.push(new MemberImportError(`<strong>Missing Stripe connection</strong><br>You need to <a href="#/settings/labs">connect to Stripe</a> to import Stripe customers.`));
             } else {
-                let stripeSeverValidation = await this._checkStripeServer(validatedSet);
+                let stripeSeverValidation = await this._checkStripeServer(sampledData);
                 if (stripeSeverValidation !== true) {
                     validationResults.push(new MemberImportError(`<strong>Wrong Stripe account</strong><br>The CSV contains Stripe customers from a different Stripe account. Make sure you're connected to the correct <a href="#/settings/labs">Stripe account</a>.`));
                 }
@@ -43,26 +45,50 @@ export default Service.extend({
         }
     },
 
-    _sampleData(data) {
-        let validatedSet = [];
-        let validationSampleSize = 30;
+    /**
+     * Method implements foollowing sampling logic:
+     * Locate 10 non-empty cells from the start/middle(ish)/end of each column (30 non-empty values in total).
+     * If the data contains 30 rows or fewer, all rows should be validated.
+     *
+     * @param {Array} data JSON objects mapped from CSV file
+     */
+    _sampleData(data, validationSampleSize = 30) {
+        let validatedSet = [{}];
 
         if (data && data.length > validationSampleSize) {
-            // validated data size is larger than sample size take 3
-            // equal parts from head, tail and middle of the data set
-            const partitionSize = validationSampleSize / 3;
+            let sampleKeys = Object.keys(data[0]);
 
-            const head = data.slice(0, partitionSize);
-            const tail = data.slice((data.length - partitionSize), data.length);
+            sampleKeys.forEach(function (key) {
+                const nonEmptyKeyEntries = data.filter(entry => !isEmpty(entry[key]));
+                let sampledEntries = [];
 
-            const middleIndex = Math.floor(data.length / 2);
-            const middleStartIndex = middleIndex - 2;
-            const middleEndIndex = middleIndex + 3;
-            const middle = data.slice(middleStartIndex, middleEndIndex);
+                if (nonEmptyKeyEntries.length <= validationSampleSize) {
+                    sampledEntries = nonEmptyKeyEntries;
+                } else {
+                    // take 3 equal parts from head, tail and middle of the data set
+                    const partitionSize = validationSampleSize / 3;
 
-            validatedSet.push(...head);
-            validatedSet.push(...middle);
-            validatedSet.push(...tail);
+                    const head = data.slice(0, partitionSize);
+                    const tail = data.slice((data.length - partitionSize), data.length);
+
+                    const middleIndex = Math.floor(data.length / 2);
+                    const middleStartIndex = middleIndex - 2;
+                    const middleEndIndex = middleIndex + 3;
+                    const middle = data.slice(middleStartIndex, middleEndIndex);
+
+                    validatedSet.push(...head);
+                    validatedSet.push(...middle);
+                    validatedSet.push(...tail);
+                }
+
+                sampledEntries.forEach((entry, index) => {
+                    if (!validatedSet[index]) {
+                        validatedSet[index] = {};
+                    }
+
+                    validatedSet[index][key] = entry[key];
+                });
+            });
         } else {
             validatedSet = data;
         }
