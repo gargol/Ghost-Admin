@@ -58,4 +58,20 @@ describe('Integration: Service: member-import-validator', function () {
         expect(result.length).to.equal(1);
         expect(result[0].message).to.equal('<strong>Missing Stripe connection</strong><br>You need to <a href="#/settings/labs">connect to Stripe</a> to import Stripe customers.');
     });
+
+    it('returns validation error for invalid email', async function () {
+        this.owner.register('service:membersUtils', Service.extend({
+            isStripeEnabled: false
+        }));
+
+        let service = this.owner.lookup('service:member-import-validator');
+
+        const result = await service.check([{
+            name: 'Egg',
+            email: 'invalid_email'
+        }]);
+
+        expect(result.length).to.equal(1);
+        expect(result[0].message).to.equal('Emails in provided data don\'t appear to be valid email addresses.');
+    });
 });
